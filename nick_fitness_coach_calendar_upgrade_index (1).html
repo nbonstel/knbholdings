@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nick's 2026 Fitness Coach — All-in-One</title>
+  <meta name="theme-color" content="#16a34a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root{ --bg:#0f172a; --bg-soft:#111827; --card:#020617; --accent:#22c55e; --accent-strong:#16a34a; --text:#e5e7eb; --muted:#9ca3af; --border:#1f2937; }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:radial-gradient(circle at top,#1e293b,#020617 58%);color:var(--text)}
+    #app{max-width:1180px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    h1{font-size:1.4rem;margin:0}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.12);color:#bbf7d0}
+    nav{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+    .tab{flex:1 1 130px;padding:10px 12px;border-radius:999px;background:var(--bg-soft);border:1px solid var(--border);color:var(--muted);cursor:pointer}
+    .tab.active{background:linear-gradient(135deg,var(--accent-strong),#15803d);color:#ecfdf5;border-color:rgba(34,197,94,.6)}
+    .content{border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,#0b1222,#060b16);padding:16px}
+    .grid{display:grid;gap:12px}
+    .grid-2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+    .card{border:1px solid var(--border);border-radius:14px;background:rgba(6,11,22,.95);padding:12px}
+    .card h3{margin:0 0 6px;font-size:.98rem}
+    label{font-size:.8rem;color:var(--muted)}
+    input,select,textarea{width:100%;padding:8px;border-radius:10px;border:1px solid #1f2937;background:#020617;color:var(--text);font-size:.85rem}
+    textarea{min-height:72px;resize:vertical}
+    button.btn{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:12px;border:1px solid var(--border);background:var(--accent);color:#052e1a;font-weight:600;cursor:pointer}
+    button.btn.secondary{background:transparent;color:var(--muted)}
+
+    /* Calendar */
+    .cal-wrap{display:grid;grid-template-columns:280px 1fr;gap:12px}
+    .month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .month-head button{background:var(--bg-soft);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer}
+    .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .dow,.day{padding:8px;border:1px solid #0b1325;border-radius:10px;background:#0a1224;text-align:center}
+    .dow{font-size:.72rem;color:var(--muted);background:#091025;border-color:#0b162c}
+    .day{min-height:84px;position:relative;cursor:pointer}
+    .day .num{position:absolute;top:6px;left:8px;font-size:.8rem;color:#cbd5e1}
+    .day .tag{position:absolute;bottom:6px;left:6px;right:6px;font-size:.66rem;border:1px solid rgba(34,197,94,.35);border-radius:999px;color:#bbf7d0;background:rgba(34,197,94,.12);padding:2px 6px}
+    .day.today{outline:2px solid var(--accent)}
+    .day.other{opacity:.45}
+
+    .row{display:flex;gap:8px}
+    .row>div{flex:1}
+    .tiny{font-size:.78rem;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .list{margin:6px 0 0;padding-left:18px;color:var(--muted)}
+    .two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+    .inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill-total{font-size:.82rem;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.95);border:1px solid rgba(148,163,184,.45);color:var(--text)}
+    .pill-total strong{color:var(--accent)}
+    table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.78rem}
+    th,td{padding:6px 8px;border-bottom:1px solid #111827;text-align:left;vertical-align:top}
+    th{font-weight:600;color:var(--muted);font-size:.75rem}
+    .badge{margin-left:8px;font-size:.72rem;border:1px solid #374151;background:#0b1222;border-radius:999px;padding:2px 8px;color:#9ca3af}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Nick's 2026 Fitness Coach <span id="diag" class="badge">self-check: running…</span></h1>
+      <span class="pill">🏋️ Daily Log · 📈 Scoreboard · 🧠 Coach Card · 🍽️ Meal Plan · 📆 Calendar · 🤖 Feedback</span>
+    </header>
+
+    <nav>
+      <button class="tab" data-tab="daily">Daily Log</button>
+      <button class="tab" data-tab="weekly">Weekly Summary</button>
+      <button class="tab" data-tab="scoreboard">Scoreboard</button>
+      <button class="tab" data-tab="coach">Coach Card</button>
+      <button class="tab" data-tab="meals">Meal Plan</button>
+      <button class="tab" data-tab="calendar">Calendar</button>
+      <button class="tab" data-tab="feedback">Feedback</button>
+      <button class="tab active" data-tab="settings">Settings</button>
+    </nav>
+
+    <div class="content" id="content"></div>
+  </div>
+
+  <script>
+  (()=>{
+    const STORAGE_KEY='nick_fitness_allinone_v3';
+    const state={activeTab:'settings',dailyLogs:[],weeklySummaries:[],scoreboards:[],dayPlans:{},settings:{useAI:false,openaiKey:'',timezone:'America/Detroit'}};
+
+    // ---------- Storage ----------
+    function load(){try{const raw=localStorage.getItem(STORAGE_KEY); if(raw){Object.assign(state, JSON.parse(raw));}}catch(e){console.warn('load fail',e)} }
+    function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(state));}
+
+    // ---------- Tabs ----------
+    function setTab(tab){ state.activeTab=tab; document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab)); render(); }
+
+    // ---------- Utils ----------
+    const DAYNAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONTHNAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    function ymd(d){return d.toISOString().slice(0,10);} function parseYMD(s){const [y,m,dd]=s.split('-').map(Number);return new Date(y,m-1,dd);} 
+    function pad(n){return String(n).padStart(2,'0')} function fmt(d){return `${MONTHNAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`}
+
+    // ---------- Workout Templates ----------
+    const workoutByWeekday={
+      1:{title:'Mon · Upper + Easy Run',blocks:['5:30–5:40 Warm-up (mobility/band work)','5:40–6:10 Bench 4×6, Pull-ups 4×max, DB Shoulder Press 3×8, Barbell Row 4×6','6:10–6:30 Biceps: Incline DB Curls 4×10, Hammer Curls 3×12','6:30–7:00 Easy Run 2–3 mi (Zone 2)']},
+      2:{title:'Tue · Tempo/Speed + Back/Biceps',blocks:['5:30–5:40 Warm-up jog + drills','5:40–6:20 Tempo/Speed: 1 mi WU · 2 mi tempo (or intervals) · 0.5–1 mi CD','6:20–6:50 Lat Pulldown 3×10, Face Pulls 3×12, Barbell Curls 4×8, Cable Curls 3×12–15','6:50–7:00 Stretch']},
+      3:{title:'Wed · Lower Body Strength',blocks:['5:30–5:40 Hip mobility','5:40–6:30 Squat 4×6, Deadlift 4×5, Bulgarian Split Squat 3×8/leg, Hamstring Curls 3×12','6:30–6:50 Calf Raises 4×12, Planks 3×60s, Pallof/Russian Twists 3×12','6:50–7:00 Stretch']},
+      4:{title:'Thu · Medium Run + Shoulders/Arms',blocks:['5:30–5:40 Warm-up jog','5:40–6:20 Medium Run 4–6 mi (easy-steady)','6:20–6:50 Shoulder Press 3×10, Lateral Raises 3×15, Barbell Curls 4×8–10, Preacher Curls 3×10','6:50–7:00 Stretch']},
+      5:{title:'Fri · Full Body or Cross-Train',blocks:['5:30–5:40 Warm-up','5:40–6:20 Full Body: Clean Pulls 3×5, DB Bench 3×10, Bent Row 3×8, Farmer Carries 3×40–60s','6:20–6:50 Mobility + Core circuit','Alt: Bike 30′ + Row 10′ + Core 10′']},
+      6:{title:'Sat · Long Run (PM)',blocks:['Afternoon session 3:00–4:30 PM','Build miles: Base 6–10 · 10–14 · 14–18 · Peak 18–20 (race blocks)','Fuel & hydrate during run · Carb+Protein within 20′']},
+      0:{title:'Sun · Recovery / Mobility (PM)',blocks:['Afternoon 3:00–4:00 PM','Mobility 20–30′ · Optional 2 mi easy','Sauna/cold · Plan the week']}
+    };
+
+    const mealsDefault={
+      breakfast:['Protein shake 40–50g + fruit (post-workout)','OR 3 eggs + turkey sausage + toast','OR Overnight oats + protein + berries'],
+      lunch:['Chicken power bowl (chicken + rice/quinoa + veggies)','Turkey/chicken wrap + Greek yogurt','Lean beef/turkey bowl + greens'],
+      dinner:['Salmon + rice or potatoes + veg','Chicken/steak + sweet potato + veg','Crockpot: turkey chili / chicken salsa / beef stew'],
+      snacks:['Greek yogurt','Cottage cheese','Apple + almonds','Protein shake']
+    };
+
+    function suggestedLongRun(date){const y=date.getFullYear();const r1=new Date(y,3,15), r2=new Date(y,9,15);const dist=(a,b)=>Math.abs((b-a)/86400000);const d=Math.min(dist(date,r1),dist(date,r2));if(d<14)return'Taper: 8–12 mi';if(d<30)return'Peak: 18–20 mi';if(d<60)return'Build: 14–18 mi';if(d<90)return'Build: 10–14 mi';return'Base: 6–10 mi';}
+
+    // ---------- RENDERERS ----------
+    function render(){
+      const c=document.getElementById('content');
+      const tab=state.activeTab; document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+      if(tab==='daily') return renderDaily(c);
+      if(tab==='weekly') return renderWeekly(c);
+      if(tab==='scoreboard') return renderScoreboard(c);
+      if(tab==='coach') return renderCoach(c);
+      if(tab==='meals') return renderMeals(c);
+      if(tab==='calendar') return renderCalendar(c);
+      if(tab==='feedback') return renderFeedback(c);
+      if(tab==='settings') return renderSettings(c);
+    }
+
+    // ---- DAILY LOG ----
+    function renderDaily(c){
+      const rows=state.dailyLogs.slice().sort((a,b)=>a.date.localeCompare(b.date)).reverse().map(d=>`<tr><td>${d.date}</td><td>${d.workoutType||''}${d.longRun==='Y'?'<br><span class=tiny>Long run</span>':''}</td><td>${d.miles||''}</td><td>${d.strength||''}</td><td>${d.bicepsSets||''}</td><td>${d.calories||''}</td><td>${d.protein||''}</td><td>${d.water||''}</td><td>${d.sleep||''}</td><td>${d.weight||''}</td><td>${d.energy||''}</td><td>${d.monsterFree||''}</td><td>${(d.notes||'').replace(/</g,'&lt;')}</td></tr>`).join('');
+      c.innerHTML=`
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>New Daily Entry</h3>
+            <div class=row>
+              <div><label>Date</label><input type=date id=dl-date></div>
+              <div><label>Workout Type</label><select id=dl-type><option>Run</option><option>Strength</option><option>Run + Strength</option><option>Recovery</option><option>Rest</option></select></div>
+              <div><label>Long Run?</label><select id=dl-long><option></option><option>Y</option><option>N</option></select></div>
+            </div>
+            <div class=row>
+              <div><label>Miles</label><input type=number step=0.1 id=dl-miles></div>
+              <div><label>Strength Done?</label><select id=dl-strength><option></option><option>Y</option><option>N</option></select></div>
+              <div><label>Biceps Sets</label><input type=number id=dl-biceps></div>
+            </div>
+            <div class=row>
+              <div><label>Calories</label><input type=number id=dl-cal></div>
+              <div><label>Protein (g)</label><input type=number id=dl-pro></div>
+              <div><label>Water (oz)</label><input type=number id=dl-water></div>
+            </div>
+            <div class=row>
+              <div><label>Sleep (hrs)</label><input type=number step=0.1 id=dl-sleep></div>
+              <div><label>Weight (lbs)</label><input type=number id=dl-weight></div>
+              <div><label>Energy (1–10)</label><input type=number min=1 max=10 id=dl-energy></div>
+            </div>
+            <div class=row>
+              <div><label>White Monster-Free?</label><select id=dl-mon><option></option><option>Y</option><option>N</option></select></div>
+            </div>
+            <div><label>Notes</label><textarea id=dl-notes placeholder="Anything notable."></textarea></div>
+            <div class=inline>
+              <button class=btn id=dl-save>💾 Save</button>
+              <button class="btn secondary" id=dl-today>Today</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Recent Entries</h3>
+            ${state.dailyLogs.length?`<div style="max-height:360px;overflow:auto"><table><thead><tr><th>Date</th><th>Workout</th><th>Miles</th><th>Strength</th><th>Biceps</th><th>Cal</th><th>Prot</th><th>Water</th><th>Sleep</th><th>Wt</th><th>Energy</th><th>Monster</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class=muted>No entries yet.</p>'}
+          </div>
+        </div>`;
+      document.getElementById('dl-today').onclick=()=>{const t=new Date(); document.getElementById('dl-date').value=ymd(t)};
+      document.getElementById('dl-save').onclick=()=>{
+        const log={
+          date:document.getElementById('dl-date').value,
+          workoutType:document.getElementById('dl-type').value,
+          longRun:document.getElementById('dl-long').value,
+          miles:document.getElementById('dl-miles').value,
+          strength:document.getElementById('dl-strength').value,
+          bicepsSets:document.getElementById('dl-biceps').value,
+          calories:document.getElementById('dl-cal').value,
+          protein:document.getElementById('dl-pro').value,
+          water:document.getElementById('dl-water').value,
+          sleep:document.getElementById('dl-sleep').value,
+          weight:document.getElementById('dl-weight').value,
+          energy:document.getElementById('dl-energy').value,
+          monsterFree:document.getElementById('dl-mon').value,
+          notes:document.getElementById('dl-notes').value
+        }; if(!log.date){alert('Please select a date.');return;}
+        state.dailyLogs.push(log); save(); setTab('daily');
+      };
+    }
+
+    // ---- WEEKLY SUMMARY ----
+    function renderWeekly(c){
+      const rows=state.weeklySummaries.slice().sort((a,b)=>a.weekStart.localeCompare(b.weekStart)).reverse().map(w=>`<tr><td>${w.weekStart} #${w.weekNumber||''}</td><td>${w.totalMiles||''}</td><td>${w.strengthSessions||''}</td><td>${w.longRun||''}</td><td>${w.avgProtein||''}</td><td>${w.avgCalories||''}</td><td>${w.avgWater||''}</td><td>${w.avgSleep||''}</td><td>${w.startWeight||''} → ${w.endWeight||''}<br><span class=tiny>${w.weightChange||''} lbs</span></td><td>${(w.wins||'').replace(/</g,'&lt;')}</td><td>${(w.improve||'').replace(/</g,'&lt;')}</td></tr>`).join('');
+      c.innerHTML=`
+        <div class="grid grid-2">
+          <div class=card>
+            <h3>New Weekly Summary</h3>
+            <div class=row>
+              <div><label>Week Start (Mon)</label><input type=date id=ws-start></div>
+              <div><label>Week #</label><input type=number id=ws-num></div>
+            </div>
+            <div class=row>
+              <div><label>Total Miles</label><input type=number step=0.1 id=ws-miles></div>
+              <div><label>Strength Sessions</label><input type=number id=ws-str></div>
+              <div><label>Long Run Completed?</label><select id=ws-long><option></option><option>Y</option><option>N</option></select></div>
+            </div>
+            <div class=row>
+              <div><label>Avg Protein (g)</label><input type=number id=ws-pro></div>
+              <div><label>Avg Calories</label><input type=number id=ws-cal></div>
+              <div><label>Avg Water (oz)</label><input type=number id=ws-water></div>
+            </div>
+            <div class=row>
+              <div><label>Avg Sleep (hrs)</label><input type=number step=0.1 id=ws-sleep></div>
+              <div><label>Start Weight</label><input type=number id=ws-ws></div>
+              <div><label>End Weight</label><input type=number id=ws-we></div>
+            </div>
+            <div class=row>
+              <div><label>Weight Change</label><input type=number step=0.1 id=ws-dw></div>
+            </div>
+            <div><label>Key Wins</label><textarea id=ws-wins></textarea></div>
+            <div><label>Improvements</label><textarea id=ws-imp></textarea></div>
+            <button class=btn id=ws-save>💾 Save</button>
+          </div>
+          <div class=card>
+            <h3>Past Weeks</h3>
+            ${state.weeklySummaries.length?`<div style="max-height:360px;overflow:auto"><table><thead><tr><th>Week</th><th>Miles</th><th>Strength</th><th>Long</th><th>Protein</th><th>Calories</th><th>Water</th><th>Sleep</th><th>Weight</th><th>Wins</th><th>Improve</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class=muted>No summaries yet.</p>'}
+          </div>
+        </div>`;
+      document.getElementById('ws-save').onclick=()=>{
+        const w={weekStart:document.getElementById('ws-start').value,weekNumber:document.getElementById('ws-num').value,totalMiles:document.getElementById('ws-miles').value,strengthSessions:document.getElementById('ws-str').value,longRun:document.getElementById('ws-long').value,avgProtein:document.getElementById('ws-pro').value,avgCalories:document.getElementById('ws-cal').value,avgWater:document.getElementById('ws-water').value,avgSleep:document.getElementById('ws-sleep').value,startWeight:document.getElementById('ws-ws').value,endWeight:document.getElementById('ws-we').value,weightChange:document.getElementById('ws-dw').value,wins:document.getElementById('ws-wins').value,improve:document.getElementById('ws-imp').value}; if(!w.weekStart){alert('Week start required');return;} state.weeklySummaries.push(w); save(); setTab('weekly'); };
+    }
+
+    // ---- SCOREBOARD ----
+    function renderScoreboard(c){
+      const rows=state.scoreboards.slice().sort((a,b)=>a.weekStart.localeCompare(b.weekStart)).reverse().map(s=>`<tr><td>${s.weekStart} #${s.weekNumber||''}</td><td>${s.workoutsScore||''}</td><td>${s.longRunScore||''}</td><td>${s.strengthQualityScore||''}</td><td>${s.nutritionScore||''}</td><td>${s.proteinScore||''}</td><td>${s.hydrationScore||''}</td><td>${s.sleepScore||''}</td><td>${s.mindsetScore||''}</td><td><strong>${s.total||''}</strong></td></tr>`).join('');
+      c.innerHTML=`
+        <div class="grid grid-2">
+          <div class=card>
+            <h3>New Scorecard</h3>
+            <div class=row>
+              <div><label>Week Start</label><input type=date id=sc-start></div>
+              <div><label>Week #</label><input type=number id=sc-num></div>
+            </div>
+            <div class=row>
+              <div><label>Workouts (0–2)</label><input type=number min=0 max=2 id=sc-w1></div>
+              <div><label>Long Run (0–2)</label><input type=number min=0 max=2 id=sc-w2></div>
+            </div>
+            <div class=row>
+              <div><label>Strength Quality (0–2)</label><input type=number min=0 max=2 id=sc-w3></div>
+              <div><label>Nutrition Consistency (0–2)</label><input type=number min=0 max=2 id=sc-w4></div>
+            </div>
+            <div class=row>
+              <div><label>Protein (0–2)</label><input type=number min=0 max=2 id=sc-w5></div>
+              <div><label>Hydration (0–2)</label><input type=number min=0 max=2 id=sc-w6></div>
+            </div>
+            <div class=row>
+              <div><label>Sleep (0–2)</label><input type=number min=0 max=2 id=sc-w7></div>
+              <div><label>Mindset (0–2)</label><input type=number min=0 max=2 id=sc-w8></div>
+            </div>
+            <div class=inline>
+              <span class=pill-total>Target: <strong>22–28</strong></span>
+              <button class=btn id=sc-save>💾 Save</button>
+            </div>
+          </div>
+          <div class=card>
+            <h3>History</h3>
+            ${state.scoreboards.length?`<div style="max-height:360px;overflow:auto"><table><thead><tr><th>Week</th><th>Workouts</th><th>Long</th><th>Strength</th><th>Nutrition</th><th>Protein</th><th>Hydration</th><th>Sleep</th><th>Mindset</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class=muted>No scorecards yet.</p>'}
+          </div>
+        </div>`;
+      document.getElementById('sc-save').onclick=()=>{
+        const s={weekStart:document.getElementById('sc-start').value,weekNumber:document.getElementById('sc-num').value,workoutsScore:+(document.getElementById('sc-w1').value||0),longRunScore:+(document.getElementById('sc-w2').value||0),strengthQualityScore:+(document.getElementById('sc-w3').value||0),nutritionScore:+(document.getElementById('sc-w4').value||0),proteinScore:+(document.getElementById('sc-w5').value||0),hydrationScore:+(document.getElementById('sc-w6').value||0),sleepScore:+(document.getElementById('sc-w7').value||0),mindsetScore:+(document.getElementById('sc-w8').value||0)}; if(!s.weekStart){alert('Week start required');return;} s.total=s.workoutsScore+s.longRunScore+s.strengthQualityScore+s.nutritionScore+s.proteinScore+s.hydrationScore+s.sleepScore+s.mindsetScore; state.scoreboards.push(s); save(); setTab('scoreboard'); };
+    }
+
+    // ---- COACH CARD ----
+    function renderCoach(c){
+      c.innerHTML=`
+        <div class="grid grid-2">
+          <div class=card><h3>Morning (5:00–7:00)</h3><ul class=list><li>16–20 oz water + electrolytes</li><li>Warm-up 10′</li><li>Workout block 5:30–7:00</li><li>Post-workout protein 30–40 g</li><li>1-minute intention</li></ul></div>
+          <div class=card><h3>Evening & Recovery</h3><ul class=list><li>Protein-forward dinner</li><li>Light mobility</li><li>No screens 60′ before bed</li><li>Lay out gear for tomorrow</li><li>Lights out 9:30–10:00 PM</li></ul></div>
+        </div>`;
+    }
+
+    // ---- MEAL PLAN ----
+    function renderMeals(c){
+      c.innerHTML=`
+        <div class="grid grid-2">
+          <div class=card><h3>Daily Targets</h3><ul class=list><li>Calories: 2400–2700 (higher on heavy run weeks)</li><li>Protein: <strong>175–190 g/day</strong></li><li>Water: 90–110 oz/day</li><li>Electrolytes: 1×/day</li></ul></div>
+          <div class=card><h3>Meal Rotation</h3><div class=two-col><div><label>Breakfast</label><ul class=list><li>Protein shake + fruit</li><li>Eggs + turkey sausage + toast</li><li>Overnight oats + protein + berries</li></ul></div><div><label>Lunch</label><ul class=list><li>Chicken power bowl</li><li>Turkey/chicken wrap + Greek yogurt</li><li>Lean beef/turkey bowl</li></ul></div><div><label>Dinner</label><ul class=list><li>Salmon + rice/potatoes + veg</li><li>Chicken/steak + sweet potato + veg</li><li>Crockpot: turkey chili / chicken salsa / beef stew</li></ul></div><div><label>Snacks</label><ul class=list><li>Greek yogurt</li><li>Cottage cheese</li><li>Apple + almonds</li><li>Protein shake</li></ul></div></div></div>
+        </div>`;
+    }
+
+    // ---- CALENDAR ----
+    function renderCalendar(c){
+      const today=new Date();
+      const current=state.currentMonth? parseYMD(state.currentMonth+'-01'): new Date(today.getFullYear(),today.getMonth(),1);
+      const y=current.getFullYear(), m=current.getMonth();
+      const first=new Date(y,m,1), last=new Date(y,m+1,0);
+      const start=new Date(first); start.setDate(first.getDate()-first.getDay());
+      const end=new Date(last); end.setDate(last.getDate()+(6-last.getDay()));
+
+      let html=`<div class=month-head><button id=prevM>◀</button><div><strong>${MONTHNAMES[m]} ${y}</strong></div><div class=inline><button id=todayBtn>Today</button><button id=nextM>▶</button></div></div><div class=cal>`;
+      DAYNAMES.forEach(d=> html+=`<div class=dow>${d}</div>`);
+      for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+        const other=d.getMonth()!==m, isToday=ymd(d)===ymd(today), wk=d.getDay(), key=ymd(d);
+        const tag=wk===6? suggestedLongRun(d): (wk===0?'Recovery/Mobility':'5:30–7:00 Training');
+        const plan=state.dayPlans[key];
+        html+=`<div class="day ${other?'other':''} ${isToday?'today':''}" data-date="${key}"><div class=num>${d.getDate()}</div><div class=tag>${plan? 'Saved • '+(plan.title||tag):tag}</div></div>`
+      }
+      html+='</div><div class=card id=detail></div>';
+      c.innerHTML=html;
+      document.getElementById('prevM').onclick=()=>{const nm=new Date(y,m-1,1); state.currentMonth=`${nm.getFullYear()}-${pad(nm.getMonth()+1)}`; save(); render();};
+      document.getElementById('nextM').onclick=()=>{const nm=new Date(y,m+1,1); state.currentMonth=`${nm.getFullYear()}-${pad(nm.getMonth()+1)}`; save(); render();};
+      document.getElementById('todayBtn').onclick=()=>{state.currentMonth=`${today.getFullYear()}-${pad(today.getMonth()+1)}`; save(); render();};
+      c.querySelectorAll('.day').forEach(el=> el.addEventListener('click', ()=> openDay(el.dataset.date)) );
+      openDay(ymd(today));
+    }
+
+    function openDay(dateStr){
+      const d=parseYMD(dateStr); const wd=d.getDay(); const w=workoutByWeekday[wd]||{title:'Training',blocks:['Training block','Accessory','Cool-down']};
+      const defaults={title:w.title,blocks:[...w.blocks],meals:mealsDefault,notes:''}; if(wd===6) defaults.blocks[1]=suggestedLongRun(d);
+      const plan=state.dayPlans[dateStr]||defaults;
+      const detail=document.getElementById('detail');
+      detail.innerHTML=`<h3>📅 ${fmt(d)} — Plan</h3>
+        <div class="grid grid-2">
+          <div class=card>
+            <label>Workout Title</label><input id=pl-title value="${(plan.title||'').replace(/"/g,'&quot;')}">
+            <label style="margin-top:8px">Workout Blocks (one per line)</label><textarea id=pl-blocks>${(plan.blocks||[]).join('\n')}</textarea>
+            <div class=inline style="margin-top:8px"><button class=btn id=savePlan>💾 Save Day</button><button class="btn secondary" id=icsBtn>📤 Export .ics</button></div>
+          </div>
+          <div class=card>
+            <h3>🍽️ Meals</h3>
+            <div class=two-col>
+              <div><label>Breakfast Options</label><textarea id=ml-breakfast>${(plan.meals.breakfast||[]).join('\n')}</textarea></div>
+              <div><label>Lunch Options</label><textarea id=ml-lunch>${(plan.meals.lunch||[]).join('\n')}</textarea></div>
+              <div><label>Dinner Options</label><textarea id=ml-dinner>${(plan.meals.dinner||[]).join('\n')}</textarea></div>
+              <div><label>Snacks</label><textarea id=ml-snacks>${(plan.meals.snacks||[]).join('\n')}</textarea></div>
+            </div>
+            <label style="margin-top:8px">Notes</label><textarea id=pl-notes>${(plan.notes||'').replace(/</g,'&lt;')}</textarea>
+          </div>
+        </div>`;
+      document.getElementById('savePlan').onclick=()=>{
+        state.dayPlans[dateStr]={
+          title:document.getElementById('pl-title').value.trim()||defaults.title,
+          blocks:document.getElementById('pl-blocks').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+          meals:{
+            breakfast:document.getElementById('ml-breakfast').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+            lunch:document.getElementById('ml-lunch').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+            dinner:document.getElementById('ml-dinner').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+            snacks:document.getElementById('ml-snacks').value.split(/\n+/).map(s=>s.trim()).filter(Boolean)
+          },
+          notes:document.getElementById('pl-notes').value
+        }; save(); render(); };
+      document.getElementById('icsBtn').onclick=()=>{
+        const start=new Date(d); const weekend=(wd===0||wd===6); if(weekend){start.setHours(15,0,0,0)} else {start.setHours(5,30,0,0)} const end=new Date(start.getTime()+90*60000);
+        const desc=[...(plan.blocks||[]) , '', 'Meals:', '-', (plan.meals.breakfast||[])[0]||'', '-', (plan.meals.lunch||[])[0]||'', '-', (plan.meals.dinner||[])[0]||''].join('\n');
+        const ics=buildICS({title:plan.title,description:desc,start,end}); downloadBlob(ics,`workout-${dateStr}.ics`,'text/calendar'); };
+    }
+
+    function toICSDate(dt){return dt.getUTCFullYear()+pad(dt.getUTCMonth()+1)+pad(dt.getUTCDate())+'T'+pad(dt.getUTCHours())+pad(dt.getUTCMinutes())+pad(dt.getUTCSeconds())+'Z'}
+    function buildICS({title,description,start,end}){const uid='nick-'+Date.now()+'@fitness';return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Nick Fitness Coach//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+toICSDate(new Date()),'DTSTART:'+toICSDate(start),'DTEND:'+toICSDate(end),'SUMMARY:'+escapeICS(title||'Workout'),'DESCRIPTION:'+escapeICS(description||''),'END:VEVENT','END:VCALENDAR'].join('\r\n')} 
+    function escapeICS(s){return (s||'').replace(/\n|\r/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;')}
+    function downloadBlob(content, filename, type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),500)}
+
+    // ---- FEEDBACK (Local Coach with optional OpenAI) ----
+    function renderFeedback(c){
+      c.innerHTML=`<div class=grid grid-2>
+        <div class=card>
+          <h3>Real-Time Feedback</h3>
+          <p class=muted>Choose a date range (or leave blank for last 7 days). The Local Coach analyzes logs and gives specific guidance. If you enable OpenAI in Settings, it will also generate AI-based feedback.</p>
+          <div class=row>
+            <div><label>From</label><input type=date id=f-from></div>
+            <div><label>To</label><input type=date id=f-to></div>
+          </div>
+          <div class=inline style="margin-top:8px"><button class=btn id=f-run>🔎 Analyze</button><button class="btn secondary" id=f-copy>📋 Copy</button></div>
+        </div>
+        <div class=card>
+          <h3>Coach Output</h3>
+          <textarea id=f-out style="min-height:240px"></textarea>
+        </div>
+      </div>`;
+      document.getElementById('f-run').onclick=async()=>{
+        const from=document.getElementById('f-from').value, to=document.getElementById('f-to').value; 
+        const logs=filterLogs(from,to);
+        const local=localCoach(logs);
+        let out='';
+        out += `— LOCAL COACH —\n${local}\n`;
+        if(state.settings.useAI && state.settings.openaiKey){
+          try{ const ai=await aiCoach(local, logs); out+=`\n— AI COACH —\n${ai}`; }catch(e){ out+=`\n(AI coach unavailable: ${e.message})`; }
+        } else {
+          out+='\n(Turn on AI in Settings to add AI feedback)';
+        }
+        document.getElementById('f-out').value=out;
+      };
+      document.getElementById('f-copy').onclick=()=>{const t=document.getElementById('f-out'); t.select(); document.execCommand('copy');};
+    }
+
+    function filterLogs(from,to){
+      let arr=[...state.dailyLogs];
+      if(from) arr=arr.filter(x=>x.date>=from);
+      if(to) arr=arr.filter(x=>x.date<=to);
+      if(!from&&!to){ // default last 7 days
+        const seven=new Date(); seven.setDate(seven.getDate()-7); const s=ymd(seven); arr=arr.filter(x=>x.date>=s);
+      }
+      return arr;
+    }
+
+    function avg(nums){const a=nums.filter(v=>v!=='' && !isNaN(+v)).map(Number); if(!a.length) return 0; return +(a.reduce((p,c)=>p+c,0)/a.length).toFixed(2)}
+
+    function localCoach(logs){
+      if(!logs.length) return 'No logs in range. Log your workouts, nutrition, sleep, weight to get targeted feedback.';
+      const miles=avg(logs.map(l=>l.miles||''));
+      const strengthDays=logs.filter(l=>l.strength==='Y').length;
+      const protein=avg(logs.map(l=>l.protein||''));
+      const water=avg(logs.map(l=>l.water||''));
+      const sleep=avg(logs.map(l=>l.sleep||''));
+      const weightStart=Number((logs[0]||{}).weight||0), weightEnd=Number((logs[logs.length-1]||{}).weight||0);
+      const monsterFreeDays=logs.filter(l=>l.monsterFree==='Y').length;
+
+      let notes=[];
+      if(miles<20) notes.push(`Mileage avg ${miles} mi/day window looks low for marathon build — consider adding 1 easy mile to Tue/Thu runs.`);
+      if(strengthDays<3) notes.push(`Strength sessions logged: ${strengthDays}. Aim for 3–4 per week to protect muscle + performance.`);
+      if(protein<170) notes.push(`Protein avg ${protein}g — push breakfast shake to hit 175–190g.`);
+      if(water<90) notes.push(`Hydration avg ${water} oz — target 90–110 oz.`);
+      if(sleep<7) notes.push(`Sleep avg ${sleep}h — protect 7–8h by shutting screens 60 min before bed.`);
+      if(monsterFreeDays<logs.length) notes.push(`White Monster-free days: ${monsterFreeDays}/${logs.length}. Keep the taper rolling; stock sparkling water + coffee alternatives.`);
+      if(weightEnd && weightStart && weightEnd>=weightStart) notes.push(`Weight trending flat/up (${weightStart} → ${weightEnd}). Check weekend calories + add 10–15 min to cool-down walks.`);
+      if(!notes.length) notes.push('Great consistency. Keep current plan; consider small progression on long run and curls volume (+1–2 sets/week).');
+
+      return [
+        `Range: ${logs[0].date} → ${logs[logs.length-1].date}`,
+        `Averages — Miles: ${miles}, Protein: ${protein}g, Water: ${water}oz, Sleep: ${sleep}h`,
+        `Strength sessions: ${strengthDays}, Monster-free days: ${monsterFreeDays}/${logs.length}`,
+        '', 'Recommendations:', '- '+notes.join('\n- ')
+      ].join('\n');
+    }
+
+    async function aiCoach(localText, logs){
+      // Optional OpenAI call. Requires your API key in Settings. Runs client-side; your key stays in your browser.
+      const sys=`You are a concise fitness coach for a marathon-running executive. Prioritize safety, progressive overload, recovery, hydration, protein 175–190g, and tapering before races.`;
+      const user = `Here is my recent training & nutrition summary and a local analysis. Improve it with 5–8 targeted, practical suggestions. Avoid medical claims.\n\nLOCAL ANALYSIS:\n${localText}`;
+      const resp = await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.settings.openaiKey},body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:sys},{role:'user',content:user}],temperature:0.3})});
+      if(!resp.ok) throw new Error('HTTP '+resp.status);
+      const data=await resp.json();
+      return data.choices?.[0]?.message?.content || '(No AI response)';
+    }
+
+    // ---- SETTINGS ----
+    function renderSettings(c){
+      c.innerHTML=`<div class=grid grid-2>
+        <div class=card>
+          <h3>General</h3>
+          <label>Timezone</label><input id=set-tz value="${state.settings.timezone||''}">
+          <div class=inline style="margin-top:8px"><button class=btn id=set-save>💾 Save Settings</button></div>
+        </div>
+        <div class=card>
+          <h3>AI Feedback (optional)</h3>
+          <p class=muted>Paste your OpenAI API key to enable on-device AI feedback. Your key is stored locally in this browser and sent only to OpenAI when you press Analyze.</p>
+          <label>Use AI Coach</label><select id=set-useai><option value="false">Off</option><option value="true">On</option></select>
+          <label style="margin-top:6px">OpenAI API Key</label><input id=set-key placeholder="sk-..." value="${state.settings.openaiKey? '••• saved •••':''}" />
+          <div class=inline style="margin-top:8px"><button class=btn id=set-ai-save>🔐 Save AI Settings</button><button class="btn secondary" id=set-ai-clear>🧹 Clear</button></div>
+          <p class=tiny>Tip: If you don’t want AI, the Local Coach already gives rule-based feedback.</p>
+        </div>
+      </div>`;
+      document.getElementById('set-save').onclick=()=>{state.settings.timezone=document.getElementById('set-tz').value||'America/Detroit'; save();};
+      document.getElementById('set-useai').value=String(!!state.settings.useAI);
+      document.getElementById('set-ai-save').onclick=()=>{const sel=document.getElementById('set-useai').value==='true'; const keyInput=document.getElementById('set-key').value.trim(); state.settings.useAI=sel; if(keyInput && !keyInput.startsWith('•••')) state.settings.openaiKey=keyInput; save(); alert('AI settings saved.');};
+      document.getElementById('set-ai-clear').onclick=()=>{state.settings.useAI=false; state.settings.openaiKey=''; save(); renderSettings(c);};
+    }
+
+    // ---------- SELF-TESTS ----------
+    function selfTests(){
+      const results=[];
+      try{ results.push(("a\nb\nc".split(/\n+/).length===3)?'split\\n ok':'split\\n failed'); }catch(e){ results.push('split test error'); }
+      try{ const ics=buildICS({title:'T',description:'D',start:new Date(),end:new Date(Date.now()+60000)}); results.push(ics.includes('BEGIN:VCALENDAR')?'ics ok':'ics failed'); }catch(e){ results.push('ics error'); }
+      try{ const s = ['x','y'].join('\n'); results.push((s.indexOf('\n')>0)?'join\\n ok':'join\\n failed'); }catch(e){ results.push('join error'); }
+      const ok=results.every(r=>/ok$/.test(r));
+      const el=document.getElementById('diag'); if(el){ el.textContent = 'self-check: '+(ok?'passed':'issues')+' · '+results.join(', '); el.style.color = ok ? '#86efac' : '#fca5a5'; }
+    }
+
+    // ---------- INIT ----------
+    load();
+    document.querySelectorAll('.tab').forEach(b=> b.addEventListener('click', ()=> setTab(b.dataset.tab)) );
+    if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(()=>{})})}
+    render();
+    selfTests();
+  })();
+  </script>
+</body>
+</html>
