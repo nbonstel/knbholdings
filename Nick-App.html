@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nick's 2026 Fitness Coach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: #020617;
+      --accent: #22c55e;
+      --accent-soft: rgba(34,197,94,0.15);
+      --accent-strong: #16a34a;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --danger: #ef4444;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1e293b, #020617 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    #app {
+      max-width: 1100px;
+      width: 100%;
+      margin: 32px 16px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.9), rgba(15,23,42,0.98));
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.18);
+      backdrop-filter: blur(16px);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0.03em;
+    }
+
+    .title-block p {
+      margin: 4px 0 0;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .stat-pill {
+      background: radial-gradient(circle at top left, #22c55e33, #065f4633);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 0.78rem;
+      border: 1px solid rgba(34,197,94,0.35);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #bbf7d0;
+      white-space: nowrap;
+    }
+
+    .stat-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(34,197,94,0.9);
+    }
+
+    nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      flex: 1 1 120px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--muted);
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s ease-out;
+    }
+
+    .tab-btn span.icon {
+      font-size: 1rem;
+    }
+
+    .tab-btn.active {
+      background: radial-gradient(circle at top, var(--accent-strong), #15803d);
+      color: #ecfdf5;
+      border-color: rgba(34,197,94,0.7);
+      box-shadow: 0 12px 28px rgba(34,197,94,0.22);
+      transform: translateY(-1px);
+    }
+
+    .tab-btn:hover {
+      border-color: rgba(148,163,184,0.7);
+    }
+
+    .content {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at top left, #111827, #020617 60%);
+      padding: 18px 18px 14px;
+    }
+
+    h2 {
+      margin: 0 0 4px;
+      font-size: 1.1rem;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      margin: 0 0 16px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .card {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.95);
+      padding: 12px 12px 10px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .card-subtitle {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 7px 8px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: var(--text);
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.16s ease-out, box-shadow 0.16s ease-out;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.35);
+    }
+
+    textarea {
+      border-radius: 12px;
+      resize: vertical;
+      min-height: 60px;
+      font-size: 0.8rem;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: var(--accent);
+      color: #022c22;
+      font-weight: 600;
+      margin-top: 6px;
+      transition: all 0.18s ease-out;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--accent-strong);
+      transform: translateY(-0.5px);
+      box-shadow: 0 10px 25px rgba(34,197,94,0.3);
+    }
+
+    .btn.secondary:hover:not(:disabled) {
+      border-color: rgba(148,163,184,0.9);
+      color: #e5e7eb;
+      box-shadow: none;
+      transform: translateY(-0.5px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.78rem;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #111827;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(148,163,184,0.5);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .tag.good {
+      background: var(--accent-soft);
+      border-color: rgba(34,197,94,0.6);
+      color: #bbf7d0;
+    }
+
+    .pill-total {
+      font-size: 0.82rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(148,163,184,0.45);
+      color: var(--text);
+    }
+
+    .pill-total strong {
+      color: var(--accent);
+    }
+
+    .text-muted {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .list {
+      margin: 4px 0 0;
+      padding-left: 18px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .list li {
+      margin-bottom: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.74rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      color: var(--muted);
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34,197,94,0.9);
+    }
+
+    @media (max-width: 720px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .stat-pill {
+        align-self: flex-start;
+      }
+      #app {
+        margin: 12px;
+        padding: 18px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title-block">
+      <h1>Nick's 2026 Fitness Coach</h1>
+      <p>Daily execution. Weekly reflection. Long-term transformation.</p>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-dot"></span>
+      Tracking: Training · Nutrition · Mindset
+    </div>
+  </header>
+
+  <nav>
+    <button class="tab-btn active" data-tab="daily">
+      <span class="icon">📅</span><span>Daily Log</span>
+    </button>
+    <button class="tab-btn" data-tab="weekly">
+      <span class="icon">📈</span><span>Weekly Summary</span>
+    </button>
+    <button class="tab-btn" data-tab="scoreboard">
+      <span class="icon">🥇</span><span>Scoreboard</span>
+    </button>
+    <button class="tab-btn" data-tab="coach">
+      <span class="icon">🧠</span><span>Coach Card</span>
+    </button>
+    <button class="tab-btn" data-tab="meals">
+      <span class="icon">🍽️</span><span>Meal Plan</span>
+    </button>
+  </nav>
+
+  <div class="content" id="content"></div>
+</div>
+
+<script>
+  (function () {
+    const STORAGE_KEY = "nick_fitness_app_v1";
+
+    const state = {
+      dailyLogs: [],
+      weeklySummaries: [],
+      scoreboards: [],
+      activeTab: "daily"
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed.dailyLogs)) state.dailyLogs = parsed.dailyLogs;
+          if (Array.isArray(parsed.weeklySummaries)) state.weeklySummaries = parsed.weeklySummaries;
+          if (Array.isArray(parsed.scoreboards)) state.scoreboards = parsed.scoreboards;
+        }
+      } catch (e) {
+        console.error("Failed to load state", e);
+      }
+    }
+
+    function saveState() {
+      const payload = {
+        dailyLogs: state.dailyLogs,
+        weeklySummaries: state.weeklySummaries,
+        scoreboards: state.scoreboards
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function setActiveTab(tab) {
+      state.activeTab = tab;
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+      render();
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "";
+      try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const opts = { month: "short", day: "numeric" };
+        return d.toLocaleDateString(undefined, opts);
+      } catch {
+        return dateStr;
+      }
+    }
+
+    function render() {
+      const content = document.getElementById("content");
+      switch (state.activeTab) {
+        case "daily":
+          content.innerHTML = renderDailyLog();
+          bindDailyEvents();
+          break;
+        case "weekly":
+          content.innerHTML = renderWeeklySummary();
+          bindWeeklyEvents();
+          break;
+        case "scoreboard":
+          content.innerHTML = renderScoreboard();
+          bindScoreboardEvents();
+          break;
+        case "coach":
+          content.innerHTML = renderCoachCard();
+          break;
+        case "meals":
+          content.innerHTML = renderMeals();
+          break;
+      }
+    }
+
+    // ---- DAILY LOG ----
+    function renderDailyLog() {
+      const rows = state.dailyLogs
+        .slice()
+        .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
+        .reverse()
+        .map(log => `
+          <tr>
+            <td>${formatDate(log.date)}<br/><span class="text-muted">${log.day || ""}</span></td>
+            <td>${log.workoutType || ""}<br/>
+              ${log.longRun === "Y" ? '<span class="tag good">Long Run</span>' : ""}
+            </td>
+            <td>${log.miles || ""}</td>
+            <td>${log.strength || ""}</td>
+            <td>${log.bicepsSets || ""}</td>
+            <td>${log.calories || ""}</td>
+            <td>${log.protein || ""}</td>
+            <td>${log.water || ""}</td>
+            <td>${log.sleep || ""}</td>
+            <td>${log.weight || ""}</td>
+            <td>${log.energy || ""}</td>
+            <td>${log.notes || ""}</td>
+          </tr>
+        `).join("");
+
+      return `
+        <h2>Daily Log</h2>
+        <p class="subtitle">Capture your training, nutrition, and energy so you can see trends over time.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">New Entry</div>
+                <div class="card-subtitle">Takes 30 seconds right after the workout.</div>
+              </div>
+            </div>
+            <div class="grid" style="gap:10px;">
+              <div class="row">
+                <div>
+                  <label for="dl-date">Date</label>
+                  <input type="date" id="dl-date" />
+                </div>
+                <div>
+                  <label for="dl-day">Day</label>
+                  <select id="dl-day">
+                    <option value="">Auto / Optional</option>
+                    <option>Mon</option><option>Tue</option><option>Wed</option>
+                    <option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="dl-workoutType">Workout Type</label>
+                  <select id="dl-workoutType">
+                    <option value="">Select</option>
+                    <option>Run</option>
+                    <option>Strength</option>
+                    <option>Run + Strength</option>
+                    <option>Recovery</option>
+                    <option>Rest</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="dl-miles">Miles Run</label>
+                  <input type="number" step="0.1" id="dl-miles" placeholder="e.g., 5" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="dl-strength">Strength Done? (Y/N)</label>
+                  <select id="dl-strength">
+                    <option value=""></option>
+                    <option>Y</option>
+                    <option>N</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="dl-biceps">Biceps Sets Completed</label>
+                  <input type="number" id="dl-biceps" placeholder="e.g., 8" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="dl-longRun">Long Run? (Y/N)</label>
+                  <select id="dl-longRun">
+                    <option value=""></option>
+                    <option>Y</option>
+                    <option>N</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="dl-energy">Energy (1–10)</label>
+                  <input type="number" min="1" max="10" id="dl-energy" placeholder="7" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="dl-calories">Calories (est.)</label>
+                  <input type="number" id="dl-calories" placeholder="e.g., 2500" />
+                </div>
+                <div>
+                  <label for="dl-protein">Protein (g)</label>
+                  <input type="number" id="dl-protein" placeholder="e.g., 185" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="dl-water">Water (oz)</label>
+                  <input type="number" id="dl-water" placeholder="e.g., 100" />
+                </div>
+                <div>
+                  <label for="dl-sleep">Sleep (hrs)</label>
+                  <input type="number" step="0.1" id="dl-sleep" placeholder="e.g., 7.5" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="dl-weight">Weight (lbs)</label>
+                  <input type="number" id="dl-weight" placeholder="e.g., 175" />
+                </div>
+              </div>
+              <div>
+                <label for="dl-notes">Notes (optional)</label>
+                <textarea id="dl-notes" placeholder="Anything notable about today's training, food, or sleep."></textarea>
+              </div>
+              <button class="btn" id="dl-save"><span>💾</span> Save Daily Log</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent Entries</div>
+                <div class="card-subtitle">Review last days & weeks at a glance.</div>
+              </div>
+            </div>
+            ${state.dailyLogs.length === 0
+              ? '<p class="text-muted">No entries yet. Log today’s workout to get started.</p>'
+              : `
+                <div style="max-height:360px; overflow:auto;">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Workout</th>
+                        <th>Miles</th>
+                        <th>Strength</th>
+                        <th>Biceps</th>
+                        <th>Cals</th>
+                        <th>Prot</th>
+                        <th>Water</th>
+                        <th>Sleep</th>
+                        <th>Wt</th>
+                        <th>Energy</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                </div>
+              `}
+          </div>
+        </div>
+      `;
+    }
+
+    function bindDailyEvents() {
+      const saveBtn = document.getElementById("dl-save");
+      if (!saveBtn) return;
+      saveBtn.addEventListener("click", () => {
+        const log = {
+          date: document.getElementById("dl-date").value,
+          day: document.getElementById("dl-day").value,
+          workoutType: document.getElementById("dl-workoutType").value,
+          miles: document.getElementById("dl-miles").value,
+          strength: document.getElementById("dl-strength").value,
+          bicepsSets: document.getElementById("dl-biceps").value,
+          longRun: document.getElementById("dl-longRun").value,
+          energy: document.getElementById("dl-energy").value,
+          calories: document.getElementById("dl-calories").value,
+          protein: document.getElementById("dl-protein").value,
+          water: document.getElementById("dl-water").value,
+          sleep: document.getElementById("dl-sleep").value,
+          weight: document.getElementById("dl-weight").value,
+          notes: document.getElementById("dl-notes").value
+        };
+
+        if (!log.date) {
+          alert("Please enter a date for this log.");
+          return;
+        }
+
+        state.dailyLogs.push(log);
+        saveState();
+        render();
+      });
+    }
+
+    // ---- WEEKLY SUMMARY ----
+    function renderWeeklySummary() {
+      const rows = state.weeklySummaries
+        .slice()
+        .sort((a, b) => (a.weekStart || "").localeCompare(b.weekStart || ""))
+        .reverse()
+        .map(w => `
+          <tr>
+            <td>${formatDate(w.weekStart)}<br/><span class="text-muted">#${w.weekNumber || ""}</span></td>
+            <td>${w.totalMiles || ""}</td>
+            <td>${w.strengthSessions || ""}</td>
+            <td>${w.longRun || ""}</td>
+            <td>${w.avgProtein || ""}</td>
+            <td>${w.avgCalories || ""}</td>
+            <td>${w.avgWater || ""}</td>
+            <td>${w.avgSleep || ""}</td>
+            <td>${w.startWeight || ""} → ${w.endWeight || ""}<br/>
+              <span class="text-muted">${w.weightChange || ""} lbs</span>
+            </td>
+            <td>${w.wins || ""}</td>
+            <td>${w.improve || ""}</td>
+          </tr>
+        `).join("");
+
+      return `
+        <h2>Weekly Summary</h2>
+        <p class="subtitle">Zoom out once a week to see progress and adjust the plan.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">New Weekly Summary</div>
+                <div class="card-subtitle">Use this every Sunday.</div>
+              </div>
+            </div>
+            <div class="grid" style="gap:10px;">
+              <div class="row">
+                <div>
+                  <label for="ws-weekStart">Week Start Date (Mon)</label>
+                  <input type="date" id="ws-weekStart" />
+                </div>
+                <div>
+                  <label for="ws-weekNumber">Week #</label>
+                  <input type="number" id="ws-weekNumber" placeholder="e.g., 1" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="ws-totalMiles">Total Miles Run</label>
+                  <input type="number" step="0.1" id="ws-totalMiles" />
+                </div>
+                <div>
+                  <label for="ws-strengthSessions">Strength Sessions Completed</label>
+                  <input type="number" id="ws-strengthSessions" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="ws-longRun">Long Run Completed? (Y/N)</label>
+                  <select id="ws-longRun">
+                    <option value=""></option>
+                    <option>Y</option>
+                    <option>N</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="ws-avgProtein">Avg Protein (g)</label>
+                  <input type="number" id="ws-avgProtein" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="ws-avgCalories">Avg Calories</label>
+                  <input type="number" id="ws-avgCalories" />
+                </div>
+                <div>
+                  <label for="ws-avgWater">Avg Water (oz)</label>
+                  <input type="number" id="ws-avgWater" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="ws-avgSleep">Avg Sleep (hrs)</label>
+                  <input type="number" step="0.1" id="ws-avgSleep" />
+                </div>
+                <div>
+                  <label for="ws-startWeight">Start Weight (lbs)</label>
+                  <input type="number" id="ws-startWeight" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="ws-endWeight">End Weight (lbs)</label>
+                  <input type="number" id="ws-endWeight" />
+                </div>
+                <div>
+                  <label for="ws-weightChange">Weight Change (lbs)</label>
+                  <input type="number" step="0.1" id="ws-weightChange" placeholder="e.g., -0.8" />
+                </div>
+              </div>
+              <div>
+                <label for="ws-wins">Key Wins</label>
+                <textarea id="ws-wins" placeholder="What went well this week?"></textarea>
+              </div>
+              <div>
+                <label for="ws-improve">Improvements for Next Week</label>
+                <textarea id="ws-improve" placeholder="What will you adjust?"></textarea>
+              </div>
+              <button class="btn" id="ws-save"><span>💾</span> Save Weekly Summary</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Past Weeks</div>
+                <div class="card-subtitle">See how consistent you're really being.</div>
+              </div>
+            </div>
+            ${state.weeklySummaries.length === 0
+              ? '<p class="text-muted">No weekly summaries yet. Log your first one this Sunday.</p>'
+              : `
+                <div style="max-height:360px; overflow:auto;">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Week</th>
+                        <th>Miles</th>
+                        <th>Strength</th>
+                        <th>Long Run</th>
+                        <th>Protein</th>
+                        <th>Calories</th>
+                        <th>Water</th>
+                        <th>Sleep</th>
+                        <th>Weight</th>
+                        <th>Wins</th>
+                        <th>Improve</th>
+                      </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                </div>
+              `}
+          </div>
+        </div>
+      `;
+    }
+
+    function bindWeeklyEvents() {
+      const saveBtn = document.getElementById("ws-save");
+      if (!saveBtn) return;
+      saveBtn.addEventListener("click", () => {
+        const summary = {
+          weekStart: document.getElementById("ws-weekStart").value,
+          weekNumber: document.getElementById("ws-weekNumber").value,
+          totalMiles: document.getElementById("ws-totalMiles").value,
+          strengthSessions: document.getElementById("ws-strengthSessions").value,
+          longRun: document.getElementById("ws-longRun").value,
+          avgProtein: document.getElementById("ws-avgProtein").value,
+          avgCalories: document.getElementById("ws-avgCalories").value,
+          avgWater: document.getElementById("ws-avgWater").value,
+          avgSleep: document.getElementById("ws-avgSleep").value,
+          startWeight: document.getElementById("ws-startWeight").value,
+          endWeight: document.getElementById("ws-endWeight").value,
+          weightChange: document.getElementById("ws-weightChange").value,
+          wins: document.getElementById("ws-wins").value,
+          improve: document.getElementById("ws-improve").value
+        };
+
+        if (!summary.weekStart) {
+          alert("Please enter a week start date.");
+          return;
+        }
+
+        state.weeklySummaries.push(summary);
+        saveState();
+        render();
+      });
+    }
+
+    // ---- SCOREBOARD ----
+    function renderScoreboard() {
+      const rows = state.scoreboards
+        .slice()
+        .sort((a, b) => (a.weekStart || "").localeCompare(b.weekStart || ""))
+        .reverse()
+        .map(s => `
+          <tr>
+            <td>${formatDate(s.weekStart)}<br/><span class="text-muted">#${s.weekNumber || ""}</span></td>
+            <td>${s.workoutsScore || ""}</td>
+            <td>${s.longRunScore || ""}</td>
+            <td>${s.strengthQualityScore || ""}</td>
+            <td>${s.nutritionScore || ""}</td>
+            <td>${s.proteinScore || ""}</td>
+            <td>${s.hydrationScore || ""}</td>
+            <td>${s.sleepScore || ""}</td>
+            <td>${s.mindsetScore || ""}</td>
+            <td><strong>${s.total || ""}</strong></td>
+          </tr>
+        `).join("");
+
+      return `
+        <h2>Weekly Scoreboard</h2>
+        <p class="subtitle">Score yourself like a coach: 0–2 points per category.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">New Scorecard</div>
+                <div class="card-subtitle">Fill this out after your Weekly Summary.</div>
+              </div>
+              <span class="pill-total">Target: <strong>22–28</strong> points</span>
+            </div>
+            <div class="grid" style="gap:10px;">
+              <div class="row">
+                <div>
+                  <label for="sc-weekStart">Week Start Date</label>
+                  <input type="date" id="sc-weekStart" />
+                </div>
+                <div>
+                  <label for="sc-weekNumber">Week #</label>
+                  <input type="number" id="sc-weekNumber" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="sc-workouts">Workouts Completed (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-workouts" />
+                </div>
+                <div>
+                  <label for="sc-longRun">Long Run (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-longRun" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="sc-strength">Strength Quality (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-strength" />
+                </div>
+                <div>
+                  <label for="sc-nutrition">Nutrition Consistency (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-nutrition" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="sc-protein">Protein Goal (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-protein" />
+                </div>
+                <div>
+                  <label for="sc-hydration">Hydration (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-hydration" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="sc-sleep">Sleep (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-sleep" />
+                </div>
+                <div>
+                  <label for="sc-mindset">Mindset & Recovery (0–2)</label>
+                  <input type="number" min="0" max="2" id="sc-mindset" />
+                </div>
+              </div>
+              <button class="btn" id="sc-save"><span>💾</span> Save Scorecard</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">History</div>
+                <div class="card-subtitle">Watch your consistency trend up.</div>
+              </div>
+            </div>
+            ${state.scoreboards.length === 0
+              ? '<p class="text-muted">No scorecards yet. Fill one out after your first Weekly Summary.</p>'
+              : `
+                <div style="max-height:360px; overflow:auto;">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Week</th>
+                        <th>Workouts</th>
+                        <th>Long Run</th>
+                        <th>Strength</th>
+                        <th>Nutrition</th>
+                        <th>Protein</th>
+                        <th>Hydration</th>
+                        <th>Sleep</th>
+                        <th>Mindset</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                </div>
+              `}
+          </div>
+        </div>
+      `;
+    }
+
+    function bindScoreboardEvents() {
+      const saveBtn = document.getElementById("sc-save");
+      if (!saveBtn) return;
+      saveBtn.addEventListener("click", () => {
+        const s = {
+          weekStart: document.getElementById("sc-weekStart").value,
+          weekNumber: document.getElementById("sc-weekNumber").value,
+          workoutsScore: Number(document.getElementById("sc-workouts").value || 0),
+          longRunScore: Number(document.getElementById("sc-longRun").value || 0),
+          strengthQualityScore: Number(document.getElementById("sc-strength").value || 0),
+          nutritionScore: Number(document.getElementById("sc-nutrition").value || 0),
+          proteinScore: Number(document.getElementById("sc-protein").value || 0),
+          hydrationScore: Number(document.getElementById("sc-hydration").value || 0),
+          sleepScore: Number(document.getElementById("sc-sleep").value || 0),
+          mindsetScore: Number(document.getElementById("sc-mindset").value || 0)
+        };
+        if (!s.weekStart) {
+          alert("Please enter a week start date.");
+          return;
+        }
+        s.total = s.workoutsScore + s.longRunScore + s.strengthQualityScore +
+          s.nutritionScore + s.proteinScore + s.hydrationScore +
+          s.sleepScore + s.mindsetScore;
+
+        state.scoreboards.push(s);
+        saveState();
+        render();
+      });
+    }
+
+    // ---- COACH CARD ----
+    function renderCoachCard() {
+      return `
+        <h2>Daily Coach Card</h2>
+        <p class="subtitle">This is your built-in accountability partner for training, nutrition, and sleep.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Morning (5:00–7:00 AM)</div>
+                <div class="card-subtitle">Win the day before 7 AM.</div>
+              </div>
+              <span class="badge"><span class="badge-dot"></span>Non-negotiables</span>
+            </div>
+            <ul class="list">
+              <li>16–20 oz water + electrolytes on wake-up</li>
+              <li>Warm-up (5–10 min)</li>
+              <li>Workout block 5:30–7:00 AM (run/strength per plan)</li>
+              <li>Post-workout protein (30–40 g)</li>
+              <li>1-minute intention for the day</li>
+            </ul>
+            <div style="margin-top:10px;">
+              <div class="card-title" style="font-size:0.85rem;">Midday</div>
+              <ul class="list">
+                <li>High-protein lunch</li>
+                <li>5-minute walk after eating</li>
+                <li>Quick mental reset (3 deep breaths)</li>
+                <li>Hydration check: 60–80 oz by afternoon</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Evening & Recovery</div>
+                <div class="card-subtitle">Protect sleep, protect progress.</div>
+              </div>
+            </div>
+            <ul class="list">
+              <li>Protein-forward dinner</li>
+              <li>Light stretching / mobility</li>
+              <li>No screens 60 min before bed (ideal)</li>
+              <li>Lay out workout gear for tomorrow</li>
+              <li>Magnesium (300–400 mg) if you tolerate it well</li>
+              <li>Lights out by 9:30–10:00 PM</li>
+            </ul>
+            <div style="margin-top:10px;">
+              <div class="card-title" style="font-size:0.85rem;">Weekend Focus</div>
+              <ul class="list">
+                <li>Saturday: Long run + refuel with carbs & protein</li>
+                <li>Sunday: Mobility, optional 2-mile jog, weekly review</li>
+                <li>Update Weekly Summary & Scoreboard in this app</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---- MEAL PLAN ----
+    function renderMeals() {
+      return `
+        <h2>Simple Meal Plan</h2>
+        <p class="subtitle">Keep it repeatable, protein-focused, and aligned with your training load.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Daily Targets</div>
+                <div class="card-subtitle">Baseline for 165 lbs & marathon training.</div>
+              </div>
+            </div>
+            <ul class="list">
+              <li>Calories: ~2,400–2,700 (more on heavy run weeks)</li>
+              <li>Protein: <strong>175–190 g/day</strong></li>
+              <li>Water: <strong>90–110 oz/day</strong></li>
+              <li>Electrolytes: 1× per day minimum</li>
+            </ul>
+            <div style="margin-top:10px;">
+              <div class="card-title" style="font-size:0.85rem;">Breakfast (Post-Workout)</div>
+              <ul class="list">
+                <li>Option A: Protein shake (40–50 g) + fruit</li>
+                <li>Option B: 3 eggs + turkey sausage + toast</li>
+                <li>Option C: Overnight oats + protein + berries</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Lunch & Dinner Rotation</div>
+                <div class="card-subtitle">Cook once, eat all week.</div>
+              </div>
+            </div>
+            <div class="card-subtitle" style="margin-bottom:6px;">Lunch Options</div>
+            <ul class="list">
+              <li>Chicken power bowl (chicken + rice/quinoa + veggies)</li>
+              <li>Turkey/chicken wrap + Greek yogurt</li>
+              <li>Lean beef or turkey bowl + greens</li>
+            </ul>
+            <div class="card-subtitle" style="margin-top:8px;margin-bottom:6px;">Dinner Options</div>
+            <ul class="list">
+              <li>Salmon + rice or potatoes + veg</li>
+              <li>Chicken/steak + sweet potato + veg</li>
+              <li>Crockpot: turkey chili / chicken salsa / beef stew</li>
+            </ul>
+            <div class="card-subtitle" style="margin-top:8px;margin-bottom:6px;">Snacks</div>
+            <ul class="list">
+              <li>Greek yogurt, cottage cheese</li>
+              <li>Protein shakes</li>
+              <li>Apple + almonds, beef jerky + fruit</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---- INIT ----
+    loadState();
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+    });
+    render();
+  })();
+</script>
+</body>
+</html>
