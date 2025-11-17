@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nick's 2026 Fitness Coach — Calendar</title>
+  <meta name="theme-color" content="#16a34a">
+  <style>
+    :root{
+      --bg:#0f172a;--bg-soft:#111827;--card:#020617;--accent:#22c55e;--accent-strong:#16a34a;--text:#e5e7eb;--muted:#9ca3af;--border:#1f2937;
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:radial-gradient(circle at top,#1e293b,#020617 58%);color:var(--text)}
+    #app{max-width:1180px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    h1{font-size:1.4rem;margin:0}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.12);color:#bbf7d0}
+    nav{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+    .tab{flex:1 1 130px;padding:10px 12px;border-radius:999px;background:var(--bg-soft);border:1px solid var(--border);color:var(--muted);cursor:pointer}
+    .tab.active{background:linear-gradient(135deg,var(--accent-strong),#15803d);color:#ecfdf5;border-color:rgba(34,197,94,.6)}
+    .content{border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,#0b1222,#060b16);padding:16px}
+    .grid{display:grid;gap:12px}
+    .grid-2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+    .card{border:1px solid var(--border);border-radius:14px;background:rgba(6,11,22,.95);padding:12px}
+    .card h3{margin:0 0 6px;font-size:.98rem}
+    label{font-size:.8rem;color:var(--muted)}
+    input,select,textarea{width:100%;padding:8px;border-radius:10px;border:1px solid #1f2937;background:#020617;color:var(--text);font-size:.85rem}
+    textarea{min-height:72px;resize:vertical}
+    button.btn{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:12px;border:1px solid var(--border);background:var(--accent);color:#052e1a;font-weight:600;cursor:pointer}
+    button.btn.secondary{background:transparent;color:var(--muted)}
+
+    /* Calendar */
+    .cal-wrap{display:grid;grid-template-columns:280px 1fr;gap:12px}
+    .cal-panel{border:1px solid var(--border);border-radius:14px;background:rgba(6,11,22,.95);padding:12px}
+    .month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .month-head button{background:var(--bg-soft);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer}
+    .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .dow,.day{padding:8px;border:1px solid #0b1325;border-radius:10px;background:#0a1224;text-align:center}
+    .dow{font-size:.72rem;color:var(--muted);background:#091025;border-color:#0b162c}
+    .day{min-height:84px;position:relative;cursor:pointer}
+    .day .num{position:absolute;top:6px;left:8px;font-size:.8rem;color:#cbd5e1}
+    .day .tag{position:absolute;bottom:6px;left:6px;right:6px;font-size:.66rem;border:1px solid rgba(34,197,94,.35);border-radius:999px;color:#bbf7d0;background:rgba(34,197,94,.12);padding:2px 6px}
+    .day.today{outline:2px solid var(--accent)}
+    .day.other{opacity:.45}
+
+    .detail{border:1px solid var(--border);border-radius:14px;background:rgba(6,11,22,.95);padding:12px}
+    .row{display:flex;gap:8px}
+    .row>div{flex:1}
+    .tiny{font-size:.78rem;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .list{margin:6px 0 0;padding-left:18px;color:var(--muted)}
+    .two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+    .inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Nick's 2026 Fitness Coach</h1>
+      <span class="pill">📆 Calendar · 🏋️ Workouts · 🍽️ Meal Planning</span>
+    </header>
+
+    <nav>
+      <button class="tab" data-tab="daily">Daily Log</button>
+      <button class="tab" data-tab="weekly">Weekly Summary</button>
+      <button class="tab" data-tab="scoreboard">Scoreboard</button>
+      <button class="tab" data-tab="coach">Coach Card</button>
+      <button class="tab" data-tab="meals">Meal Plan</button>
+      <button class="tab active" data-tab="calendar">Calendar</button>
+    </nav>
+
+    <div class="content" id="content"></div>
+  </div>
+
+  <script>
+  (()=>{
+    const STORAGE_KEY = 'nick_fitness_app_v2_calendar';
+    const state = { activeTab:'calendar', dailyLogs:[], weeklySummaries:[], scoreboards:[], dayPlans:{} };
+
+    // ---------- Storage ----------
+    function load(){
+      try{const raw = localStorage.getItem(STORAGE_KEY); if(raw){const p=JSON.parse(raw); Object.assign(state,p);} }catch(e){console.warn('load fail',e)}
+    }
+    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    // ---------- Tabs ----------
+    function setTab(tab){ state.activeTab=tab; document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab)); render(); }
+
+    // ---------- Utils ----------
+    const DAYNAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONTHNAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    function ymd(d){ return d.toISOString().slice(0,10); }
+    function parseYMD(s){ const [y,m,dd]=s.split('-').map(Number); return new Date(y,m-1,dd); }
+
+    // ---------- Templates ----------
+    const workoutByWeekday = {
+      1: {title:'Mon · Upper + Easy Run', blocks:[
+        '5:30–5:40 Warm-up (mobility/band work)',
+        '5:40–6:10 Bench 4×6, Pull-ups 4×max, DB Shoulder Press 3×8, Barbell Row 4×6',
+        '6:10–6:30 Biceps: Incline DB Curls 4×10, Hammer Curls 3×12',
+        '6:30–7:00 Easy Run 2–3 mi (Zone 2)']},
+      2: {title:'Tue · Tempo/Speed + Back/Biceps', blocks:[
+        '5:30–5:40 Warm-up jog + drills',
+        '5:40–6:20 Tempo/Speed: 1 mi WU · 2 mi tempo (or intervals by phase) · 0.5–1 mi CD',
+        '6:20–6:50 Lat Pulldown 3×10, Face Pulls 3×12, Barbell Curls 4×8, Cable Curls 3×12–15',
+        '6:50–7:00 Stretch']},
+      3: {title:'Wed · Lower Body Strength', blocks:[
+        '5:30–5:40 Hip mobility',
+        '5:40–6:30 Squat 4×6, Deadlift 4×5, Bulgarian Split Squat 3×8/leg, Hamstring Curls 3×12',
+        '6:30–6:50 Calf Raises 4×12, Planks 3×60s, Pallof/Russian Twists 3×12',
+        '6:50–7:00 Stretch']},
+      4: {title:'Thu · Medium Run + Shoulders/Arms', blocks:[
+        '5:30–5:40 Warm-up jog',
+        '5:40–6:20 Medium Run 4–6 mi (easy-steady)',
+        '6:20–6:50 Shoulder Press 3×10, Lateral Raises 3×15, Barbell Curls 4×8–10, Preacher Curls 3×10',
+        '6:50–7:00 Stretch']},
+      5: {title:'Fri · Full Body or Cross-Train', blocks:[
+        '5:30–5:40 Warm-up',
+        '5:40–6:20 Full Body: Clean Pulls 3×5, DB Bench 3×10, Bent Row 3×8, Farmer Carries 3×40–60s',
+        '6:20–6:50 Mobility + Core circuit',
+        'Alt: Bike 30′ + Row 10′ + Core 10′']},
+      6: {title:'Sat · Long Run (PM)', blocks:[
+        'Afternoon session 3:00–4:30 PM',
+        'Build miles: 6–10 → 10–14 → 14–18 → Peak 18–20 (race blocks)',
+        'Fuel & hydrate during run · Carb+Protein recovery within 20′']},
+      0: {title:'Sun · Recovery / Mobility (PM)', blocks:[
+        'Afternoon 3:00–4:00 PM',
+        'Mobility 20–30′ · Optional 2 mi easy',
+        'Sauna/cold · Plan the week']}
+    };
+
+    const mealsDefault = {
+      breakfast:[
+        'Protein shake 40–50g + fruit (post-workout)',
+        'OR 3 eggs + turkey sausage + toast',
+        'OR Overnight oats + protein + berries'
+      ],
+      lunch:[
+        'Chicken power bowl (chicken + rice/quinoa + veggies)',
+        'Turkey/chicken wrap + Greek yogurt',
+        'Lean beef/turkey bowl + greens'
+      ],
+      dinner:[
+        'Salmon + rice or potatoes + veg',
+        'Chicken/steak + sweet potato + veg',
+        'Crockpot: turkey chili / chicken salsa / beef stew'
+      ],
+      snacks:['Greek yogurt','Cottage cheese','Apple + almonds','Protein shake']
+    };
+
+    // Calculate suggested long-run (rough guide) based on month proximity to April/Oct races
+    function suggestedLongRun(date){
+      const y=date.getFullYear();
+      const race1=new Date(y,3,15); // mid-April
+      const race2=new Date(y,9,15); // mid-Oct
+      const dist=(d1,d2)=>Math.abs((d2-d1)/(1000*60*60*24));
+      const daysTo = Math.min(dist(date,race1), dist(date,race2));
+      if(daysTo<14) return 'Taper: 8–12 mi';
+      if(daysTo<30) return 'Peak: 18–20 mi';
+      if(daysTo<60) return 'Build: 14–18 mi';
+      if(daysTo<90) return 'Build: 10–14 mi';
+      return 'Base: 6–10 mi';
+    }
+
+    // ---------- Calendar View ----------
+    function renderCalendar(){
+      const content=document.getElementById('content');
+      const today=new Date();
+      const current = state.currentMonth? parseYMD(state.currentMonth+'-01'): new Date(today.getFullYear(),today.getMonth(),1);
+      const y=current.getFullYear(), m=current.getMonth();
+      const first=new Date(y,m,1); const last=new Date(y,m+1,0);
+      const start=new Date(first); start.setDate(first.getDate()-first.getDay());
+      const end=new Date(last); end.setDate(last.getDate()+(6-last.getDay()));
+
+      // Month header
+      const head=`<div class="month-head">
+        <button id="prevM">◀</button>
+        <div><strong>${MONTHNAMES[m]} ${y}</strong></div>
+        <div class="inline">
+          <button id="todayBtn">Today</button>
+          <button id="nextM">▶</button>
+        </div>
+      </div>`;
+
+      // DOW
+      let html=`${head}<div class="cal">`;
+      DAYNAMES.forEach(d=> html+=`<div class="dow">${d}</div>`);
+
+      // Days grid
+      const cells=[];
+      for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+        const isOther = d.getMonth()!==m; const isToday = ymd(d)===ymd(today);
+        const wk = d.getDay();
+        const tag = wk===6? suggestedLongRun(d): (wk===0? 'Recovery/Mobility':'5:30–7:00 Training');
+        const planKey = ymd(d);
+        const hasPlan = !!state.dayPlans[planKey];
+        html+=`<div class="day ${isOther?'other':''} ${isToday?'today':''}" data-date="${planKey}">
+          <div class="num">${d.getDate()}</div>
+          <div class="tag">${hasPlan? 'Saved • '+(state.dayPlans[planKey].title||tag): tag}</div>
+        </div>`;
+        cells.push(planKey);
+      }
+      html+='</div>';
+
+      // Detail panel placeholder
+      html+=`<div class="detail" id="detail"></div>`;
+      content.innerHTML = html;
+
+      // Bind month nav
+      document.getElementById('prevM').onclick=()=>{ const nm=new Date(y,m-1,1); state.currentMonth=`${nm.getFullYear()}-${String(nm.getMonth()+1).padStart(2,'0')}`; save(); render(); };
+      document.getElementById('nextM').onclick=()=>{ const nm=new Date(y,m+1,1); state.currentMonth=`${nm.getFullYear()}-${String(nm.getMonth()+1).padStart(2,'0')}`; save(); render(); };
+      document.getElementById('todayBtn').onclick=()=>{ state.currentMonth=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`; save(); render(); };
+
+      // Bind day clicks
+      content.querySelectorAll('.day').forEach(el=> el.addEventListener('click', ()=> openDay(el.dataset.date)) );
+
+      // Auto-open today
+      openDay(ymd(today));
+    }
+
+    function openDay(dateStr){
+      const d=parseYMD(dateStr);
+      const weekday=d.getDay();
+      const w = workoutByWeekday[weekday];
+      const defaultTitle = w? w.title: 'Training';
+      const defaultBlocks = (w? w.blocks: ['Training block','Accessory work','Cool-down']).slice();
+      if(weekday===6){ // Saturday long run injection
+        defaultBlocks[1] = suggestedLongRun(d);
+      }
+
+      const plan = state.dayPlans[dateStr] || {
+        title: defaultTitle,
+        blocks: defaultBlocks,
+        meals: mealsDefault,
+        notes: ''
+      };
+
+      const detail=document.getElementById('detail');
+      detail.innerHTML = `
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>📅 ${MONTHNAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} — Plan</h3>
+            <label>Workout Title</label>
+            <input id="pl-title" value="${plan.title.replace(/"/g,'&quot;')}"/>
+            <label style="margin-top:8px">Workout Blocks (one per line)</label>
+            <textarea id="pl-blocks">${plan.blocks.join('\n')}</textarea>
+            <div class="inline" style="margin-top:8px">
+              <button class="btn" id="savePlan">💾 Save Day</button>
+              <button class="btn secondary" id="icsBtn">📤 Export .ics</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>🍽️ Meals</h3>
+            <div class="two-col">
+              <div>
+                <label>Breakfast Options</label>
+                <textarea id="ml-breakfast">${plan.meals.breakfast.join('\n')}</textarea>
+              </div>
+              <div>
+                <label>Lunch Options</label>
+                <textarea id="ml-lunch">${plan.meals.lunch.join('\n')}</textarea>
+              </div>
+              <div>
+                <label>Dinner Options</label>
+                <textarea id="ml-dinner">${plan.meals.dinner.join('\n')}</textarea>
+              </div>
+              <div>
+                <label>Snacks</label>
+                <textarea id="ml-snacks">${plan.meals.snacks.join('\n')}</textarea>
+              </div>
+            </div>
+            <label style="margin-top:8px">Notes</label>
+            <textarea id="pl-notes" placeholder="Fueling cues, gear, route, taper notes…">${plan.notes||''}</textarea>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('savePlan').onclick=()=>{
+        const newPlan={
+          title: document.getElementById('pl-title').value.trim()||defaultTitle,
+          blocks: document.getElementById('pl-blocks').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+          meals: {
+            breakfast: document.getElementById('ml-breakfast').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+            lunch: document.getElementById('ml-lunch').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+            dinner: document.getElementById('ml-dinner').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+            snacks: document.getElementById('ml-snacks').value.split(/\n+/).map(s=>s.trim()).filter(Boolean)
+          },
+          notes: document.getElementById('pl-notes').value
+        };
+        state.dayPlans[dateStr]=newPlan; save(); render();
+      };
+
+      document.getElementById('icsBtn').onclick=()=>{
+        const start = new Date(d);
+        // Default workout time 5:30–7:00 on weekdays; 3–4:30 PM on weekends
+        const isWeekend = (weekday===0||weekday===6);
+        if(isWeekend){ start.setHours(15,0,0,0);} else { start.setHours(5,30,0,0);} 
+        const end = new Date(start.getTime() + (isWeekend? 90:90)*60000); // 90 min block
+        const ics = buildICS({
+          title: plan.title,
+          description: plan.blocks.join('\n')+"\n\nMeals:\n- "+plan.meals.breakfast[0]+"\n- "+plan.meals.lunch[0]+"\n- "+plan.meals.dinner[0],
+          start, end
+        });
+        downloadBlob(ics, `workout-${dateStr}.ics`, 'text/calendar');
+      };
+    }
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function toICSDate(dt){
+      return dt.getUTCFullYear()+pad(dt.getUTCMonth()+1)+pad(dt.getUTCDate())+'T'+pad(dt.getUTCHours())+pad(dt.getUTCMinutes())+pad(dt.getUTCSeconds())+'Z';
+    }
+    function buildICS({title,description,start,end}){
+      const uid = 'nick-'+Date.now()+'@fitness';
+      return [
+        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Nick Fitness Coach//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        'UID:'+uid,
+        'DTSTAMP:'+toICSDate(new Date()),
+        'DTSTART:'+toICSDate(start),
+        'DTEND:'+toICSDate(end),
+        'SUMMARY:'+escapeICS(title||'Workout'),
+        'DESCRIPTION:'+escapeICS(description||''),
+        'END:VEVENT','END:VCALENDAR'
+      ].join('\r\n');
+    }
+    function escapeICS(s){ return (s||'').replace(/[\n\r]/g,'\\n').replace(/,/g,'\,').replace(/;/g,'\;'); }
+    function downloadBlob(content, filename, type){
+      const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url),500);
+    }
+
+    // ---------- Other Tabs (lightweight placeholders pointing back to calendar for now) ----------
+    function renderDaily(){
+      const c=document.getElementById('content');
+      c.innerHTML = `<div class="card"><h3>Daily Log</h3><p class="muted">Use the Calendar to select a day, then record workout details in your own notes or keep using your previous Daily Log app if you saved it. If you want, I can port the full Daily Log and Scoreboard into this version.</p></div>`;
+    }
+    function renderWeekly(){
+      const c=document.getElementById('content');
+      c.innerHTML = `<div class="card"><h3>Weekly Summary</h3><p class="muted">Weekly views can auto-calc from saved day plans. Want me to add totals & graphs next?</p></div>`;
+    }
+    function renderScore(){
+      const c=document.getElementById('content');
+      c.innerHTML = `<div class="card"><h3>Scoreboard</h3><p class="muted">After we import your Daily Log data here, I can score weeks automatically (Workouts, Long Run, Protein, Hydration, Sleep, Mindset).</p></div>`;
+    }
+    function renderCoach(){
+      const c=document.getElementById('content');
+      c.innerHTML = `
+      <div class="grid grid-2">
+        <div class="card"><h3>Morning (5:00–7:00)</h3><ul class="list"><li>16–20 oz water + electrolytes</li><li>Warm-up 10′</li><li>Workout block 5:30–7:00</li><li>Post-workout protein 30–40 g</li><li>1-minute intention</li></ul></div>
+        <div class="card"><h3>Evening & Recovery</h3><ul class="list"><li>Protein-forward dinner</li><li>Light mobility</li><li>No screens 60′ before bed</li><li>Lay out gear for tomorrow</li><li>Lights out 9:30–10:00 PM</li></ul></div>
+      </div>`;
+    }
+    function renderMeals(){
+      const c=document.getElementById('content');
+      c.innerHTML = `
+        <div class="grid grid-2">
+          <div class="card"><h3>Daily Targets</h3><ul class="list"><li>Calories: 2400–2700 (higher on heavy run weeks)</li><li>Protein: <strong>175–190 g/day</strong></li><li>Water: 90–110 oz/day</li><li>Electrolytes: 1×/day</li></ul></div>
+          <div class="card"><h3>Meals — Rotation</h3><div class="two-col"><div><label>Breakfast</label><ul class="list"><li>Protein shake + fruit</li><li>Eggs + turkey sausage + toast</li><li>Overnight oats + protein + berries</li></ul></div><div><label>Lunch</label><ul class="list"><li>Chicken power bowl</li><li>Turkey/chicken wrap + Greek yogurt</li><li>Lean beef/turkey bowl</li></ul></div><div><label>Dinner</label><ul class="list"><li>Salmon + rice/potatoes + veg</li><li>Chicken/steak + sweet potato + veg</li><li>Crockpot: turkey chili / chicken salsa / beef stew</li></ul></div><div><label>Snacks</label><ul class="list"><li>Greek yogurt</li><li>Cottage cheese</li><li>Apple + almonds</li><li>Protein shake</li></ul></div></div></div>
+        </div>`;
+    }
+
+    // ---------- Render Switch ----------
+    function render(){
+      const tab=state.activeTab;
+      document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+      if(tab==='calendar') renderCalendar();
+      else if(tab==='daily') renderDaily();
+      else if(tab==='weekly') renderWeekly();
+      else if(tab==='scoreboard') renderScore();
+      else if(tab==='coach') renderCoach();
+      else if(tab==='meals') renderMeals();
+    }
+
+    // ---------- Init ----------
+    load();
+    document.querySelectorAll('.tab').forEach(b=> b.addEventListener('click', ()=> setTab(b.dataset.tab)) );
+    render();
+  })();
+  </script>
+</body>
+</html>
